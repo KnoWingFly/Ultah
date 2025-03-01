@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Birthday</title>
+    <style>
+      /* Importing Noto Sans JP for Japanese text support */
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@100..900&display=swap");
+
+      /* Root variables - Blue theme */
+      :root {
+        --primary-color: #4b6eff; /* Blue for birthday theme */
+        --secondary-color: #3fd2c7; /* Teal - complementary to blue */
+        --overlay-color-1: rgba(75, 110, 255, 0.8); /* Darker overlay */
+        --overlay-color-2: rgba(75, 110, 255, 0.5); /* Lighter overlay */
+        --text-color: #333;
+        --accent-color: #ffcd4b; /* Gold accent */
+        --bg-color: #f0f5f9; /* Light blue background */
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        height: 100%;
+        overflow: hidden; /* Prevent default body scrollbar */
+      }
+
+      body {
+        font-family: "Noto Sans JP", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        position: relative; /* For absolute positioning of children */
+      }
+
+      /* Page wrapper - takes full viewport and handles scrolling */
+      .page-wrapper {
+        width: 100%;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        overflow-y: auto; /* Only this element should scroll */
+        overflow-x: hidden;
+      }
+
+      /* Container for all page content */
+      .content-container {
+        width: 100%;
+        min-height: 100vh; /* Make sure it takes at least full viewport height */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        z-index: 1;
+        position: relative;
+        opacity: 0; /* Start with content hidden */
+        transition: opacity 0.5s ease;
+        padding-bottom: 5rem; /* Add padding at bottom to prevent content being cut off */
+      }
+
+      .content-container.visible {
+        opacity: 1;
+      }
+
+      /* Arrow transition that covers the entire page */
+      .page-transition {
+        --sharpness: 40%; /* Controls how pointy the arrow is */
+        position: fixed;
+        inset: 0;
+        z-index: 100; /* Sits above all content */
+        pointer-events: none; /* Allows clicking through */
+      }
+
+      /* Used when manually triggering the animation */
+      .page-transition.animate-in {
+        &::before,
+        &::after {
+          animation: arrowIn 1s cubic-bezier(0.87, 0.05, 0.02, 0.97) both;
+        }
+
+        &::before {
+          background-color: var(--overlay-color-2);
+          animation-delay: 0s;
+        }
+
+        &::after {
+          background-color: var(--overlay-color-1);
+          animation-delay: 0.2s;
+        }
+      }
+
+      .page-transition.animate-out {
+        &::before,
+        &::after {
+          animation: arrowOut 1s cubic-bezier(0.87, 0.05, 0.02, 0.97) both;
+        }
+
+        &::before {
+          background-color: var(--overlay-color-2);
+          animation-delay: 0s;
+        }
+
+        &::after {
+          background-color: var(--overlay-color-1);
+          animation-delay: 0.2s;
+        }
+      }
+
+      /* Arrow shape pseudo-elements */
+      .page-transition::before,
+      .page-transition::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+      }
+
+      /* Initial state for page load */
+      .page-transition.initial {
+        &::before,
+        &::after {
+          /* Fully covering the screen initially */
+          clip-path: polygon(
+            calc(var(--sharpness) * -1) 0,
+            100% 0,
+            calc(100% + var(--sharpness)) 50%,
+            100% 100%,
+            calc(var(--sharpness) * -1) 100%,
+            0 50%
+          );
+        }
+
+        &::before {
+          background-color: var(--overlay-color-2);
+        }
+
+        &::after {
+          background-color: var(--overlay-color-1);
+        }
+      }
+
+      /* Arrow shape animations */
+      @keyframes arrowIn {
+        from {
+          clip-path: polygon(
+            calc(var(--sharpness) * -1) 0,
+            calc(var(--sharpness) * -1) 0,
+            0 50%,
+            calc(var(--sharpness) * -1) 100%,
+            calc(var(--sharpness) * -1) 100%,
+            0 50%
+          );
+        }
+        to {
+          clip-path: polygon(
+            calc(var(--sharpness) * -1) 0,
+            100% 0,
+            calc(100% + var(--sharpness)) 50%,
+            100% 100%,
+            calc(var(--sharpness) * -1) 100%,
+            0 50%
+          );
+        }
+      }
+
+      @keyframes arrowOut {
+        from {
+          clip-path: polygon(
+            calc(var(--sharpness) * -1) 0,
+            100% 0,
+            calc(100% + var(--sharpness)) 50%,
+            100% 100%,
+            calc(var(--sharpness) * -1) 100%,
+            0 50%
+          );
+        }
+        to {
+          clip-path: polygon(
+            100% 0,
+            100% 0,
+            calc(100% + var(--sharpness)) 50%,
+            100% 100%,
+            100% 100%,
+            calc(100% + var(--sharpness)) 50%
+          );
+        }
+      }
+
+      /* Japanese-style heading with decorative elements */
+      .jp-title {
+        font-family: "M PLUS 1", "Noto Sans JP", sans-serif;
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 700;
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+        line-height: 1.2;
+        position: relative;
+        padding: 0 1rem;
+        z-index: 2;
+      }
+
+      .jp-title::before,
+      .jp-title::after {
+        content: "★";
+        color: var(--accent-color);
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .jp-title::before {
+        left: -1.5rem;
+      }
+
+      .jp-title::after {
+        right: -1.5rem;
+      }
+
+      /* Subtitle with Japanese aesthetic */
+      .jp-subtitle {
+        font-family: "Noto Sans JP", sans-serif;
+        font-size: clamp(1rem, 2vw, 1.5rem);
+        font-weight: 300;
+        text-align: center;
+        margin-bottom: 3rem;
+        color: var(--secondary-color);
+        letter-spacing: 2px;
+      }
+
+      /* Image container with decorative border */
+      .image-container {
+        width: clamp(250px, 80%, 600px);
+        height: auto;
+        aspect-ratio: 1 / 1;
+        margin: 0 auto 2rem;
+        position: relative;
+        overflow: hidden;
+        border-radius: 2px;
+        z-index: 2;
+      }
+
+      /* Decorative frame for the image */
+      .image-container::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--accent-color);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .image-container::after {
+        content: "";
+        position: absolute;
+        inset: -5px;
+        border: 1px solid var(--primary-color);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* The actual image */
+      .birthday-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Navigation buttons with Japanese style */
+      .jp-nav {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem; /* Added margin at bottom for better spacing */
+      }
+
+      .jp-button {
+        font-family: "Noto Sans JP", sans-serif;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .jp-button:hover {
+        background-color: var(--secondary-color);
+      }
+
+      .jp-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg, 
+          transparent, 
+          rgba(255, 255, 255, 0.2), 
+          transparent
+        );
+        transition: all 0.6s;
+      }
+
+      .jp-button:hover::before {
+        left: 100%;
+      }
+
+      /* Arrow icons for navigation */
+      .arrow-icon {
+        width: 12px;
+        height: 12px;
+        border-top: 2px solid white;
+        border-right: 2px solid white;
+        display: inline-block;
+      }
+
+      .arrow-right {
+        transform: rotate(45deg);
+      }
+
+      .arrow-left {
+        transform: rotate(-135deg);
+      }
+
+      /* Decorative elements */
+      .decorative-circle {
+        position: absolute;
+        border-radius: 50%;
+        background-color: var(--accent-color);
+        opacity: 0.1;
+        z-index: 1;
+      }
+
+      .circle-1 {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        left: -100px;
+      }
+
+      .circle-2 {
+        width: 200px;
+        height: 200px;
+        bottom: -50px;
+        right: -50px;
+      }
+
+      /* Page indicators */
+      .page-indicator {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+
+      .page-indicator.visible {
+        opacity: 1;
+      }
+
+      .indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--overlay-color-2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .indicator.active {
+        background-color: var(--primary-color);
+        transform: scale(1.3);
+      }
+
+      /* Memory grid for displaying multiple photos */
+      .memory-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 1rem;
+        width: clamp(250px, 80%, 800px);
+        aspect-ratio: 1 / 1;
+        margin: 0 auto 2rem;
+      }
+
+      .memory-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 2px;
+        border: 2px solid var(--accent-color);
+      }
+
+      .memory-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .memory-item:hover img {
+        transform: scale(1.05);
+      }
+
+      /* Alternative memory carousel */
+      .memory-carousel {
+        position: relative;
+        width: clamp(250px, 80%, 600px);
+        height: auto;
+        aspect-ratio: 1 / 1;
+        margin: 0 auto 2rem;
+      }
+
+      .carousel-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        border-radius: 2px;
+      }
+
+      .carousel-slide {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+
+      .carousel-slide.active {
+        opacity: 1;
+      }
+
+      .carousel-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .carousel-controls {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--overlay-color-2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .carousel-dot.active {
+        background-color: var(--primary-color);
+        transform: scale(1.3);
+      }
+
+      .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 3;
+        transition: all 0.3s ease;
+      }
+
+      .carousel-nav:hover {
+        background-color: white;
+      }
+
+      .carousel-prev {
+        left: 10px;
+      }
+
+      .carousel-next {
+        right: 10px;
+      }
+
+       /* Enhanced title effect */
+       .jp-title {
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        transition: all 0.3s ease;
+      }
+
+      /* Floating animation for decorative circles */
+      .decorative-circle {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+      }
+
+      /* Enhanced image container with floating effect */
+      .image-container {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+      }
+
+      .image-container:hover {
+        transform: translateY(-5px);
+      }
+
+      /* Polaroid effect for images */
+      .birthday-image {
+        filter: sepia(0.1) brightness(1.05) contrast(1.1);
+        border: 10px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      }
+
+      /* Sparkle effect */
+      .sparkle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: rgba(255,255,255,0.8);
+        border-radius: 50%;
+        animation: sparkle 1.5s infinite;
+      }
+
+      @keyframes sparkle {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0); opacity: 0; }
+      }
+
+      /* Confetti canvas */
+      #confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        pointer-events: none;
+      }
+
+      /* Music player */
+      .music-player {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+
+      .music-toggle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        border: none;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+      }
+
+      .music-toggle:hover {
+        transform: scale(1.1);
+        background: var(--secondary-color);
+      }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  </head>
+  <body>
+    <!-- Page transition animation overlay -->
+    <div class="page-transition initial"></div>
+
+    <!-- First page -->
+    <div class="page-wrapper" id="page1">
+      <div class="content-container">
+        <!-- Decorative elements -->
+        <div class="decorative-circle circle-1"></div>
+        <div class="decorative-circle circle-2"></div>
+
+        <!-- Main content -->
+        <h1 class="jp-title">Agnes devita widjaja</h1>
+        <p class="jp-subtitle">Happy Birthday!</p>
+
+        <!-- Image container -->
+        <div class="image-container">
+          <img src="Image/Main.png" alt="Birthday celebration" class="birthday-image">
+        </div>
+
+        <!-- Navigation -->
+        <div class="jp-nav">
+          <button class="jp-button" onclick="navigateTo('page2', 'right')">
+            <span>Memories</span>
+            <span class="arrow-icon arrow-right"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 2 - Memories Carousel Layout -->
+    <div class="page-wrapper" id="page2" style="display: none;">
+      <div class="content-container">
+        <!-- Decorative elements -->
+        <div class="decorative-circle circle-1"></div>
+        <div class="decorative-circle circle-2"></div>
+
+        <!-- Main content -->
+        <h1 class="jp-title">Memories</h1>
+        <p class="jp-subtitle">Memories Carousel</p>
+
+        <!-- Memory carousel for one-by-one viewing -->
+        <div class="memory-carousel">
+          <div class="carousel-container">
+            <div class="carousel-slide active">
+              <img src="Image/Memory1.jpeg" alt="Memory 1">
+            </div>
+            <div class="carousel-slide">
+              <img src="Image/Memory2.jpeg" alt="Memory 2">
+            </div>
+            <div class="carousel-slide">
+              <img src="Image/Memory3.jpeg" alt="Memory 3">
+            </div>
+            <div class="carousel-slide">
+              <img src="Image/Memory4.jpeg" alt="Memory 4">
+            </div>
+          </div>
+          
+          <!-- Carousel navigation -->
+          <div class="carousel-nav carousel-prev" onclick="prevSlide()">
+            <span class="arrow-icon arrow-left"></span>
+          </div>
+          <div class="carousel-nav carousel-next" onclick="nextSlide()">
+            <span class="arrow-icon arrow-right"></span>
+          </div>
+          
+          <!-- Carousel indicators -->
+          <div class="carousel-controls">
+            <div class="carousel-dot active" onclick="goToSlide(0)"></div>
+            <div class="carousel-dot" onclick="goToSlide(1)"></div>
+            <div class="carousel-dot" onclick="goToSlide(2)"></div>
+            <div class="carousel-dot" onclick="goToSlide(3)"></div>
+          </div>
+        </div>
+
+        <!-- Navigation - Fixed the back button to go to page1 -->
+        <div class="jp-nav">
+          <button class="jp-button" onclick="navigateTo('page1', 'left')">
+            <span class="arrow-icon arrow-left"></span>
+            <span>Back to Main</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page indicators -->
+    <div class="page-indicator">
+      <div class="indicator active" onclick="navigateTo('page1', 'left')"></div>
+      <div class="indicator" onclick="navigateTo('page2', 'right')"></div>
+    </div>
+
+     <!-- Confetti canvas -->
+     <canvas id="confetti-canvas"></canvas>
+
+     <!-- Music player -->
+     <div class="music-player">
+       <button class="music-toggle" onclick="toggleMusic()">🎵</button>
+       <audio id="birthday-music" loop>
+         <source src="Music.mp3" type="audio/mpeg">
+       </audio>
+     </div>
+
+    <!-- JavaScript for page navigation with animation -->
+    <script>
+      // Current page tracking
+      let currentPage = 'page1';
+      let isAnimating = false;
+
+      // Confetti animation
+      function shootConfetti() {
+        const count = 200;
+        const defaults = {
+          origin: { y: 0.7 }
+        };
+
+        function fire(particleRatio, opts) {
+          confetti(Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio)
+          }));
+        }
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+      }
+
+      // Music toggle
+      let isMusicPlaying = false;
+      const music = document.getElementById('birthday-music');
+
+      function toggleMusic() {
+        isMusicPlaying = !isMusicPlaying;
+        isMusicPlaying ? music.play() : music.pause();
+      }
+
+      // Add sparkle effects
+      function createSparkles() {
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.pointerEvents = 'none';
+        document.body.appendChild(container);
+
+        for(let i = 0; i < 50; i++) {
+          const sparkle = document.createElement('div');
+          sparkle.className = 'sparkle';
+          sparkle.style.left = Math.random() * 100 + 'vw';
+          sparkle.style.top = Math.random() * 100 + 'vh';
+          sparkle.style.animationDelay = Math.random() * 2 + 's';
+          container.appendChild(sparkle);
+        }
+      }
+
+      // Initialize enhancements
+      document.addEventListener('DOMContentLoaded', () => {
+        shootConfetti();
+        createSparkles();
+        
+        // Auto-play music after user interaction
+        document.addEventListener('click', () => {
+          if(!isMusicPlaying) {
+            music.play();
+            isMusicPlaying = true;
+          }
+        }, { once: true });
+      });
+
+      // Add swipe support for carousel
+      let touchStartX = 0;
+      const carousel = document.querySelector('.carousel-container');
+
+      carousel.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+      });
+
+      carousel.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        
+        if(Math.abs(diff) > 50) {
+          diff > 0 ? nextSlide() : prevSlide();
+        }
+      });
+      // Function to navigate between pages with animation
+      function navigateTo(targetPage, direction = 'right') {
+        if (targetPage === currentPage || isAnimating) return;
+        
+        isAnimating = true;
+        
+        // Get the transition element
+        const transition = document.querySelector('.page-transition');
+        
+        // Step 1: Arrow animation comes in
+        // Direction handling - adjust the animation direction based on navigation direction
+        if (direction === 'right') {
+          transition.style.transform = 'scaleX(1)'; // Normal direction (right to left)
+        } else {
+          transition.style.transform = 'scaleX(-1)'; // Flipped direction (left to right)
+        }
+        
+        transition.classList.add('animate-in');
+        transition.classList.remove('animate-out');
+        transition.classList.remove('initial');
+        
+        // Step 2: Hide current content and prepare next page
+        setTimeout(() => {
+          // Hide current page content
+          document.querySelector(`#${currentPage} .content-container`).classList.remove('visible');
+          
+          // After a small delay, switch the actual pages
+          setTimeout(() => {
+            // Hide current page
+            document.getElementById(currentPage).style.display = 'none';
+            
+            // Show next page (but keep content invisible)
+            document.getElementById(targetPage).style.display = 'block';
+            
+            // Update page indicators
+            document.querySelectorAll('.indicator').forEach((indicator, index) => {
+              indicator.classList.remove('active');
+            });
+            
+            // Get index for indicators (0 for page1, 1 for page2)
+            const pageIndex = parseInt(targetPage.replace('page', '')) - 1;
+            document.querySelectorAll('.indicator')[pageIndex].classList.add('active');
+            
+            // Scroll to top when changing pages
+            window.scrollTo(0, 0);
+            
+            // Update current page reference
+            currentPage = targetPage;
+            
+            // Step 3: Start the arrow animation going out
+            setTimeout(() => {
+              transition.classList.remove('animate-in');
+              transition.classList.add('animate-out');
+              
+              // Step 4: Show new page content after arrow starts to disappear
+              setTimeout(() => {
+                document.querySelector(`#${currentPage} .content-container`).classList.add('visible');
+                isAnimating = false;
+              }, 400);
+            }, 200);
+          }, 100);
+        }, 700); // Timing when the arrow fully covers the screen
+      }
+      
+      // Carousel functionality
+      let currentSlide = 0;
+      
+      function showSlide(index) {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+        
+        // Hide all slides and remove active class from dots
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        // Show the target slide and activate corresponding dot
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+        
+        // Update current slide index
+        currentSlide = index;
+      }
+      
+      function nextSlide() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const newIndex = (currentSlide + 1) % slides.length;
+        showSlide(newIndex);
+      }
+      
+      function prevSlide() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const newIndex = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(newIndex);
+      }
+      
+      function goToSlide(index) {
+        showSlide(index);
+      }
+
+      
+
+      // Initial page load animation
+      document.addEventListener('DOMContentLoaded', () => {
+        // Start with the transition overlay covering everything
+        const transition = document.querySelector('.page-transition');
+        const pageIndicator = document.querySelector('.page-indicator');
+        
+        // After a delay, start the initial animation
+        setTimeout(() => {
+          transition.classList.add('animate-out');
+          transition.classList.remove('initial');
+          
+          // Show the content after the animation starts going out
+          setTimeout(() => {
+            document.querySelector(`#${currentPage} .content-container`).classList.add('visible');
+            pageIndicator.classList.add('visible');
+          }, 400);
+          
+          // Reset animation state after completion
+          setTimeout(() => {
+            transition.classList.remove('animate-out');
+            isAnimating = false;
+          }, 1200);
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
